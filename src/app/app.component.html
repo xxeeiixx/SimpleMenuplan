@@ -1,0 +1,91 @@
+<div class="app-container">
+  <div class="menu-card">
+    <header>
+      <h1 class="main-heading">Weekly Menu Plan</h1>
+      <p class="sub-heading">Plan your meals for the week with ease.</p>
+  </header>
+
+    <section class="add-meal-section">
+      <h2 class="section-heading">Add New Meal</h2>
+      <app-add-meal-form
+        [day]="newDay()"
+        [mealName]="newMealName()"
+        [days]="days"
+        [loadingSuggest]="loadingNewMeal()"
+        (dayChange)="newDay.set($event)"
+        (mealNameChange)="newMealName.set($event)"
+        (add)="addMeal()"
+        (suggest)="suggestNewMeal()"
+      ></app-add-meal-form>
+    </section>
+    <section>
+      <ul class="menu-list">
+        <li *ngFor="let item of weeklyMenu(); trackBy: trackMenuItem">
+          <app-meal-item
+            [item]="item"
+            [editing]="editingId() === item.id"
+            [draftMeal]="draftMeal()"
+            (draftChange)="draftMeal.set($event)"
+            (edit)="startEdit(item)"
+      (save)="saveEdit()"
+            (cancel)="cancelEdit()"
+            (delete)="deleteMeal(item.id)"
+      (suggest)="suggestMealFor(item.id, item.day)"
+            [suggestDisabled]="loadingMealId() === item.id"
+            (recipe)="viewRecipe(item.id, item.meal)"
+            [recipeDisabled]="loadingRecipeId() === item.id"
+          ></app-meal-item>
+        </li>
+      </ul>
+    </section>
+
+    @if (loadingRecipeId()) {
+      <section class="grocery-list-container">
+        <h2 class="grocery-list-heading">Loading Recipe…</h2>
+        <p>Please wait while we fetch the recipe details.</p>
+      </section>
+    }
+
+    @if (recipeError()) {
+      <section class="grocery-list-container">
+        <h2 class="grocery-list-heading">Recipe Error</h2>
+        <p class="error-text">{{ recipeError() }}</p>
+        <div class="button-group mt-4">
+          <button class="close-button" (click)="closeRecipe()">Dismiss</button>
+        </div>
+      </section>
+    }
+
+    @if (recipe()) {
+      <section class="recipe-section">
+        <div class="recipe-header">
+          <h2 class="recipe-title">{{ recipe()!.title }}</h2>
+          <span class="recipe-badge">Recipe</span>
+        </div>
+        <div class="recipe-content" [innerHTML]="formatRecipe(recipe()!.content)"></div>
+        <div class="button-group mt-4">
+          <button class="cancel-button" (click)="closeRecipe()">Close</button>
+          <button class="save-button" (click)="printRecipe()">Print</button>
+        </div>
+      </section>
+    }
+
+    <section class="generate-button-section">
+      <button class="grocery-list-button" (click)="generateGrocery()" [disabled]="loadingGroceryList()">
+        @if (loadingGroceryList()) { Generating... } @else { ✨ Generate Grocery List }
+      </button>
+    </section>
+
+
+    @if (groceryList()) {
+      <section class="grocery-list-container">
+        <h2 class="grocery-list-heading">Your Grocery List</h2>
+        <div class="prose" [innerHTML]="groceryList()?.replace('\n', '<br />')"></div>
+        <button class="close-button" (click)="setGroceryList(null)">Close</button>
+      </section>
+    }
+
+  </div>
+</div>
+
+
