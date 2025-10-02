@@ -152,11 +152,20 @@ export class AppComponent {
     const lines = raw.split(/\r?\n/);
     let html = '';
     let inList = false;
+    let inCategory = false;
     
     const closeList = () => {
       if (inList) {
         html += '</ul>';
         inList = false;
+      }
+    };
+
+    const closeCategory = () => {
+      closeList();
+      if (inCategory) {
+        html += '</div>';
+        inCategory = false;
       }
     };
 
@@ -167,11 +176,15 @@ export class AppComponent {
         continue;
       }
 
-      // Category headers (with ###)
-      if (trimmed.startsWith('###')) {
-        closeList();
-        const categoryName = trimmed.replace(/^###\s*/, '').trim();
+      // Category headers (with ### or ending with **)
+      if (trimmed.startsWith('###') || /^([^*]+)\*\*$/.test(trimmed)) {
+        closeCategory();
+        const categoryName = trimmed
+          .replace(/^###\s*/, '') // Remove ### prefix if present
+          .replace(/\*\*$/, '')   // Remove ** suffix if present
+          .trim();
         html += `<div class="grocery-category"><h3>${escape(categoryName)}</h3>`;
+        inCategory = true;
         continue;
       }
 
@@ -187,16 +200,13 @@ export class AppComponent {
       }
 
       // Regular text
-      closeList();
-      if (trimmed.endsWith('**')) {
-        const category = trimmed.replace(/\*\*$/, '').trim();
-        html += `<div class="grocery-category"><h3>${escape(category)}</h3>`;
-      } else {
+      if (!trimmed.match(/^([^*]+)\*\*$/)) {  // Not a category header
+        closeList();
         html += `<p>${escape(trimmed)}</p>`;
       }
     }
 
-    closeList();
+    closeCategory(); // This will also call closeList()
     return html;
   }
 
