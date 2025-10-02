@@ -60,7 +60,7 @@
       <section class="recipe-section">
         <div class="recipe-header">
           <h2 class="recipe-title">{{ recipe()!.title }}</h2>
-          <span class="recipe-badge">Recipe</span>
+          <span class="recipe-badge">View Recipe</span>
         </div>
         <div class="recipe-content" [innerHTML]="formatRecipe(recipe()!.content)"></div>
         <div class="button-group mt-4">
@@ -80,7 +80,7 @@
     @if (groceryList()) {
       <section class="grocery-list-container">
         <h2 class="grocery-list-heading">Your Grocery List</h2>
-        <div class="prose" [innerHTML]="groceryList()?.replace('\n', '<br />')"></div>
+        <div class="prose grocery-categories" [innerHTML]="formatGroceryList(groceryList())"></div>
         <button class="close-button" (click)="setGroceryList(null)">Close</button>
       </section>
     }

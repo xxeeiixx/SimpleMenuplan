@@ -139,6 +139,67 @@ export class AppComponent {
 
   setGroceryList(value: string | null) { this.groceryList.set(value); }
 
+  formatGroceryList(raw: string | null): string {
+    if (!raw) return '';
+    
+    const escape = (s: string) => s
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/'/g, '&#39;')
+      .replace(/"/g, '&quot;');
+
+    const lines = raw.split(/\r?\n/);
+    let html = '';
+    let inList = false;
+    
+    const closeList = () => {
+      if (inList) {
+        html += '</ul>';
+        inList = false;
+      }
+    };
+
+    for (const line of lines) {
+      const trimmed = line.trim();
+      if (!trimmed) {
+        closeList();
+        continue;
+      }
+
+      // Category headers (with ###)
+      if (trimmed.startsWith('###')) {
+        closeList();
+        const categoryName = trimmed.replace(/^###\s*/, '').trim();
+        html += `<div class="grocery-category"><h3>${escape(categoryName)}</h3>`;
+        continue;
+      }
+
+      // Items (with * or -)
+      const itemMatch = trimmed.match(/^[-*]\s+(.+)$/);
+      if (itemMatch) {
+        if (!inList) {
+          html += '<ul class="grocery-items">';
+          inList = true;
+        }
+        html += `<li>${escape(itemMatch[1])}</li>`;
+        continue;
+      }
+
+      // Regular text
+      closeList();
+      if (trimmed.endsWith('**')) {
+        const category = trimmed.replace(/\*\*$/, '').trim();
+        html += `<div class="grocery-category"><h3>${escape(category)}</h3>`;
+      } else {
+        html += `<p>${escape(trimmed)}</p>`;
+      }
+    }
+
+    closeList();
+    return html;
+  }
+
   // Very lightweight markdown-ish to HTML formatter for recipe content
   formatRecipe(raw: string): string {
     const escape = (s: string) => s
