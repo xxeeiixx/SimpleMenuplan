@@ -246,13 +246,17 @@ export class AppComponent {
           inList = true;
         }
         const content = liMatch[2];
-        html += `<li>${escape(content)}</li>`;
+        // Process content for bold text
+        const processedContent = content.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+        html += `<li>${processedContent}</li>`;
         continue;
       }
 
       // Paragraph (merge lines separated by blank lines only)
       closeList();
-      html += `<p>${escape(original)}</p>`;
+      // Process paragraph content for bold text
+      const processedContent = original.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+      html += `<p>${processedContent}</p>`;
     }
     closeList();
     return html;
