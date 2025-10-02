@@ -16,13 +16,13 @@ import { AddMealFormComponent } from './components/add-meal-form.component';
 export class AppComponent {
   // Core state
   private _menu = signal<MealItem[]>([
-    { id: 1, day: 'Sunday', meal: 'Roast Chicken with Vegetables' },
-    { id: 2, day: 'Monday', meal: 'Spaghetti Bolognese' },
-    { id: 3, day: 'Tuesday', meal: 'Taco Tuesday' },
-    { id: 4, day: 'Wednesday', meal: 'Chicken Curry with Rice' },
-    { id: 5, day: 'Thursday', meal: 'Beef Stir-Fry' },
-    { id: 6, day: 'Friday', meal: 'Pizza Night' },
-    { id: 7, day: 'Saturday', meal: 'Grilled Salmon with Asparagus' },
+    { id: 1, day: 'Sunday', meal: 'Pork Sinigang' },
+    { id: 2, day: 'Monday', meal: 'Chicken Adobo' },
+    { id: 3, day: 'Tuesday', meal: 'Bicol Express' },
+    { id: 4, day: 'Wednesday', meal: 'Paksiw na Bangus' },
+    { id: 5, day: 'Thursday', meal: 'Crispy Pata' },
+    { id: 6, day: 'Friday', meal: 'Menudo' },
+    { id: 7, day: 'Saturday', meal: 'Beef Caldereta' },
   ]);
 
   readonly days = DAYS_ORDER;
@@ -83,7 +83,7 @@ export class AppComponent {
     this.loadingMealId.set(id);
     const suggestion = await this.gemini.generateContent({
       prompt: `Suggest a healthy, easy dinner idea for ${day}. Only meal name.`,
-      systemInstruction: 'Act as a creative European meal planner.'
+      systemInstruction: 'Act as a creative Filipino meal planner.'
     });
     if (suggestion) {
       this._menu.update(list => list.map(i => i.id === id ? { ...i, meal: suggestion } : i));
@@ -95,7 +95,7 @@ export class AppComponent {
     this.loadingNewMeal.set(true);
     const suggestion = await this.gemini.generateContent({
       prompt: 'Suggest one healthy dinner idea. Only meal name.',
-      systemInstruction: 'Act as a creative European meal planner.'
+      systemInstruction: 'Act as a creative Filipino meal planner.'
     });
     if (suggestion) this.newMealName.set(suggestion);
     this.loadingNewMeal.set(false);
@@ -131,7 +131,7 @@ export class AppComponent {
     const menuText = this._menu().map(i => `${i.day}: ${i.meal}`).join('\n');
     const list = await this.gemini.generateContent({
       prompt: `Make a grocery list grouped by category from:\n${menuText}`,
-      systemInstruction: 'Produce a categorized grocery list in Markdown.'
+      systemInstruction: 'Produce a categorized grocery list in Markdown. Put a quantity  for each items for 1 serving.'
     });
     if (list) this.groceryList.set(list);
     this.loadingGroceryList.set(false);
@@ -176,12 +176,12 @@ export class AppComponent {
         continue;
       }
 
-      // Category headers (with ### or ending with **)
-      if (trimmed.startsWith('###') || /^([^*]+)\*\*$/.test(trimmed)) {
+      // Category headers (with #, ##, ### or ending with **)
+      if (trimmed.match(/^#{1,3}\s+/) || /^([^*]+)\*\*$/.test(trimmed)) {
         closeCategory();
         const categoryName = trimmed
-          .replace(/^###\s*/, '') // Remove ### prefix if present
-          .replace(/\*\*$/, '')   // Remove ** suffix if present
+          .replace(/^#{1,3}\s*/, '') // Remove any # prefix
+          .replace(/\*\*/g, '')      // Remove all ** markers
           .trim();
         html += `<div class="grocery-category"><h3>${escape(categoryName)}</h3>`;
         inCategory = true;
@@ -195,14 +195,16 @@ export class AppComponent {
           html += '<ul class="grocery-items">';
           inList = true;
         }
-        html += `<li>${escape(itemMatch[1])}</li>`;
+        const itemText = itemMatch[1].replace(/\*\*/g, ''); // Remove any ** from items
+        html += `<li>${escape(itemText)}</li>`;
         continue;
       }
 
-      // Regular text
+      // Regular text (remove any ** markers)
       if (!trimmed.match(/^([^*]+)\*\*$/)) {  // Not a category header
         closeList();
-        html += `<p>${escape(trimmed)}</p>`;
+        const cleanText = trimmed.replace(/\*\*/g, '');
+        html += `<p>${escape(cleanText)}</p>`;
       }
     }
 
