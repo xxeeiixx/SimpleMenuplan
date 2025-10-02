@@ -59,43 +59,55 @@
 
   @if (loadingRecipeId() || recipe() || recipeError()) {
     <div class="recipe-pane">
-      <button class="close-x-button" (click)="closeRecipe()" aria-label="Close recipe">×</button>
+      <!-- Mobile Header -->
+      <div class="mobile-recipe-header">
+        <button class="back-button" (click)="closeRecipe()" aria-label="Back to menu"></button>
+        <h2>{{ recipe()?.title || 'Recipe' }}</h2>
+      </div>
+
+      <!-- Desktop Close Button -->
+      @if (!loadingRecipeId()) {
+        <button class="close-x-button" (click)="closeRecipe()" aria-label="Close recipe">×</button>
+      }
       
-      @if (loadingRecipeId()) {
-        <section class="recipe-section">
-          <div class="recipe-header">
-            <h2 class="recipe-title">Loading Recipe...</h2>
-          </div>
-          <div class="loading-spinner">
-            <div class="spinner"></div>
-            <p>Please wait while we fetch the recipe details.</p>
-          </div>
-        </section>
-      }
+      <!-- Mobile Content Container -->
+      <div class="mobile-recipe-content">
+        @if (loadingRecipeId()) {
+          <section class="recipe-section">
+            <div class="recipe-header">
+              <h2 class="recipe-title">Loading Recipe...</h2>
+            </div>
+            <div class="loading-spinner">
+              <div class="spinner"></div>
+              <p>Please wait while we fetch the recipe details.</p>
+            </div>
+          </section>
+        }
 
-      @if (recipeError()) {
-        <section class="recipe-section">
-          <div class="recipe-header">
-            <h2 class="recipe-title">Recipe Error</h2>
-          </div>
-          <div class="error-container">
-            <p class="error-text">{{ recipeError() }}</p>
-          </div>
-        </section>
-      }
+        @if (recipeError()) {
+          <section class="recipe-section">
+            <div class="recipe-header">
+              <h2 class="recipe-title">Recipe Error</h2>
+            </div>
+            <div class="error-container">
+              <p class="error-text">{{ recipeError() }}</p>
+            </div>
+          </section>
+        }
 
-      @if (recipe()) {
-        <section class="recipe-section">
-          <div class="recipe-header">
-            <h2 class="recipe-title">{{ recipe()!.title }}</h2>
-            <span class="recipe-badge">Recipe</span>
-          </div>
-          <div class="recipe-content" [innerHTML]="formatRecipe(recipe()!.content)"></div>
-          <div class="button-group mt-4">
-            <button class="save-button" (click)="printRecipe()">Print</button>
-          </div>
-        </section>
-      }
+        @if (recipe()) {
+          <section class="recipe-section">
+            <div class="recipe-header">
+              <h2 class="recipe-title">{{ recipe()!.title }}</h2>
+              <span class="recipe-badge">Recipe</span>
+            </div>
+            <div class="recipe-content" [innerHTML]="formatRecipe(recipe()!.content)"></div>
+            <div class="button-group mt-4">
+              <button class="save-button" (click)="printRecipe()">Print</button>
+            </div>
+          </section>
+        }
+      </div>
     </div>
   }
 </div>
